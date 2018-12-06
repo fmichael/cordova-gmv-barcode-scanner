@@ -1,3 +1,4 @@
+cordova.define("cordova-gmv-barcode-scanner.cordova-gmv-barcode-scanner", function(require, exports, module) {
 // JavaScript Document
 CDV = ( typeof CDV == 'undefined' ? {} : CDV );
 var cordova = window.cordova || window.Cordova;
@@ -139,6 +140,7 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
     if(typeof result == "undefined") {
         return false;
     }
+
     var temp = result.split("ANSI ");
     if(temp.length > 1) {
         temp = "ANSI " + temp[1];
@@ -215,7 +217,6 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         result = subfiles[0].data.split("\n")
     }
 
-
     // Handle the different AAMVA versions. There are some weird things that happened in the first AAMVA version where the
     // first, middle, and last name were all combined into the DAA field. Because of this we cannot acceptably extract the
     // names into their appropriate fields so the FirstName/MiddleName/LastName fields are not necessarily accurate in version 1.
@@ -235,7 +236,8 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 DAI: "Address.City",
                 DAJ: "Address.State",
                 DAK: "Address.Zip",
-                DAQ: "LicenseNumber"
+                DAQ: "LicenseNumber",
+                DCG: "Country"
             };
             dateFormat = "YYYYMMDD";
             break;
@@ -252,7 +254,8 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 DAI: "Address.City",
                 DAJ: "Address.State",
                 DAK: "Address.Zip",
-                DAQ: "LicenseNumber"
+                DAQ: "LicenseNumber",
+                DCG: "Country"
             };
             break;
         case "04":
@@ -274,12 +277,24 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 DAI: "Address.City",
                 DAJ: "Address.State",
                 DAK: "Address.Zip",
-                DAQ: "LicenseNumber"
+                DAQ: "LicenseNumber",
+                DCG: "Country"
             };
             break;
     }
 
     var c = {};
+    var country = 'USA'; //default to USA
+    var countryRow = result.filter(function(c) {
+        return c.startsWith('DCG');
+    });
+    if(countryRow.length) {
+        country = countryRow[0].slice(3).trim();
+    }
+    if(country == 'CAN') {
+        dateFormat = "YYYYMMDD";
+    }
+
     for(var i = 0; i < result.length; i++) {
         var line = result[i],
             code = line.slice(0,3),
@@ -298,6 +313,7 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
 
                 // Parse BirthDate and LicenseExpiration according to the defined date format depending on the the AAMVA version.
                 case "DBB":
+                case "DBD":
                 case "DBA":
                     var d;
                     switch(dateFormat) {
@@ -317,7 +333,12 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                     break;
                 // Get first 5 digits off Zip in case of longer Zip code.
                 case "DAK":
-                    val = val.slice(0,5);
+                    if(country == 'CAN') {
+                        val = val.slice(0,7).trim();
+                    }
+                    else {
+                        val = val.slice(0,5);
+                    }
                     break;
 
                 // In the case of AAMVA versions 2 and 3 we assume the first word is the first name and any words after are part of the middle name.
@@ -414,3 +435,4 @@ GMVBarcodeScanner.install = function() {
 };
 
 cordova.addConstructor(GMVBarcodeScanner.install);
+});
