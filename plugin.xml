@@ -43,20 +43,9 @@
             <meta-data
                     android:name="com.google.android.gms.vision.DEPENDENCIES"
                     android:value="barcode" />
-            <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
-        </config-file>
 
-        <config-file parent="/*" target="AndroidManifest.xml">
-            <uses-permission android:name="android.permission.CAMERA" />
-        </config-file>
-        <config-file parent="application" target="AndroidManifest.xml">
-            <meta-data
-                    android:name="com.google.android.gms.version"
-                    android:value="@integer/google_play_services_version" />
-            <meta-data
-                    android:name="com.google.android.gms.vision.DEPENDENCIES"
-                    android:value="barcode" />
-            <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
+            <activity android:label="@string/title_activity_main" android:screenOrientation="portrait" android:name="com.dealrinc.gmvScanner.SecondaryActivity"></activity>
+            <activity android:label="Read Barcode" android:screenOrientation="portrait" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
         </config-file>
 
         <config-file target="res/values/strings.xml" parent="/*">
