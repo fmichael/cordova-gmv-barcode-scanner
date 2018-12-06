@@ -1,4 +1,3 @@
-cordova.define("cordova-gmv-barcode-scanner.cordova-gmv-barcode-scanner", function(require, exports, module) {
 // JavaScript Document
 CDV = ( typeof CDV == 'undefined' ? {} : CDV );
 var cordova = window.cordova || window.Cordova;
@@ -236,8 +235,7 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 DAI: "Address.City",
                 DAJ: "Address.State",
                 DAK: "Address.Zip",
-                DAQ: "LicenseNumber",
-                DCG: "Country"
+                DAQ: "LicenseNumber"
             };
             dateFormat = "YYYYMMDD";
             break;
@@ -254,8 +252,7 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 DAI: "Address.City",
                 DAJ: "Address.State",
                 DAK: "Address.Zip",
-                DAQ: "LicenseNumber",
-                DCG: "Country"
+                DAQ: "LicenseNumber"
             };
             break;
         case "04":
@@ -277,8 +274,7 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 DAI: "Address.City",
                 DAJ: "Address.State",
                 DAK: "Address.Zip",
-                DAQ: "LicenseNumber",
-                DCG: "Country"
+                DAQ: "LicenseNumber"
             };
             break;
     }
@@ -435,4 +431,3 @@ GMVBarcodeScanner.install = function() {
 };
 
 cordova.addConstructor(GMVBarcodeScanner.install);
-});
