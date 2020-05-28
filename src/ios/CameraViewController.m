@@ -32,6 +32,8 @@
 @property(nonatomic, strong) dispatch_queue_t videoDataOutputQueue;
 @property(nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
 
+@property(nonatomic, assign) UIDeviceOrientation lastKnownDeviceOrientation;
+
 @property(nonatomic, strong) GMVDetector *barcodeDetector;
 @property(nonatomic, strong) UIButton *torchButton;
 
@@ -57,6 +59,14 @@
 
 -(NSUInteger)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskPortrait;
+}
+
+- (void)setLastKnownDeviceOrientation:(UIDeviceOrientation)orientation {
+  if (orientation != UIDeviceOrientationUnknown &&
+      orientation != UIDeviceOrientationFaceUp &&
+      orientation != UIDeviceOrientationFaceDown) {
+    _lastKnownDeviceOrientation = orientation;
+  }
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
@@ -187,15 +197,19 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
      self.imageView.image = previewImage;
      });//*/
     
+    AVCaptureDevicePosition devicePosition = AVCaptureDevicePositionBack;
+    
+    UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+    GMVImageOrientation orientation = [GMVUtility
+        imageOrientationFromOrientation:deviceOrientation
+              withCaptureDevicePosition:devicePosition
+               defaultDeviceOrientation:self.lastKnownDeviceOrientation];
+    NSDictionary *options = @{
+      GMVDetectorImageOrientation : @(orientation)
+    };
+    
     //Send the image through the barcode reader.
-    NSArray<GMVBarcodeFeature *> *barcodes = [self.barcodeDetector featuresInImage:croppedImg
-                                                                           options:nil];
-    //If no barcodes were detected then rotate the image 90 degrees. There is an issue with the barcode scanner not being able to scan data matrix in 2 orientations and rotation introduces at least one orientation to the mix.
-    if(sizeof barcodes == 0) {
-        croppedImg = [self rotateImage:croppedImg toOrientation:UIImageOrientationRight];
-        barcodes = [self.barcodeDetector featuresInImage:croppedImg
-                                                 options:nil];
-    }
+    NSArray<GMVBarcodeFeature *> *barcodes = [self.barcodeDetector featuresInImage:croppedImg options:options];
     
     //Iterate through barcodes.
     dispatch_sync(dispatch_get_main_queue(), ^{

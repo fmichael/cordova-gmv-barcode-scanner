@@ -39,7 +39,6 @@ public class CameraSourcePreview extends ViewGroup {
 
     private Context mContext;
     private SurfaceView mSurfaceView;
-    private View mViewFinderView;
     private Button mTorchButton;
     private boolean mStartRequested;
     private boolean mSurfaceAvailable;
@@ -61,14 +60,10 @@ public class CameraSourcePreview extends ViewGroup {
         mSurfaceView.getHolder().addCallback(new SurfaceCallback());
         addView(mSurfaceView);
 
-        mViewFinderView = new View(mContext);
-        mViewFinderView.setBackgroundResource(getResources().getIdentifier("rounded_rectangle", "drawable", mContext.getPackageName()));
-        mViewFinderView.layout(0,0, 500, 500);
-        addView(mViewFinderView);
-
         mTorchButton = new Button(mContext);
-        mTorchButton.setBackgroundResource(getResources().getIdentifier("torch_inactive", "drawable", mContext.getPackageName()));
-        mTorchButton.layout(0,0, dpToPx(45),dpToPx(45));
+        mTorchButton.setBackgroundResource(
+                getResources().getIdentifier("torch_inactive", "drawable", mContext.getPackageName()));
+        mTorchButton.layout(0, 0, dpToPx(45), dpToPx(45));
         mTorchButton.setMaxWidth(50);
         mTorchButton.setRotation(90);
 
@@ -76,10 +71,12 @@ public class CameraSourcePreview extends ViewGroup {
             @Override
             public void onClick(View v) {
                 try {
-                        mCameraSource.setFlashMode(!mFlashState?Camera.Parameters.FLASH_MODE_TORCH :Camera.Parameters.FLASH_MODE_OFF);
-                        mFlashState = !mFlashState;
-                        mTorchButton.setBackgroundResource(getResources().getIdentifier(mFlashState ? "torch_active" : "torch_inactive", "drawable", mContext.getPackageName()));
-                } catch(Exception e) {
+                    mCameraSource.setFlashMode(
+                            !mFlashState ? Camera.Parameters.FLASH_MODE_TORCH : Camera.Parameters.FLASH_MODE_OFF);
+                    mFlashState = !mFlashState;
+                    mTorchButton.setBackgroundResource(getResources().getIdentifier(
+                            mFlashState ? "torch_active" : "torch_inactive", "drawable", mContext.getPackageName()));
+                } catch (Exception e) {
 
                 }
             }
@@ -88,9 +85,7 @@ public class CameraSourcePreview extends ViewGroup {
     }
 
     public int dpToPx(int dp) {
-        float density = mContext.getResources()
-                .getDisplayMetrics()
-                .density;
+        float density = mContext.getResources().getDisplayMetrics().density;
         return Math.round((float) dp * density);
     }
 
@@ -155,7 +150,7 @@ public class CameraSourcePreview extends ViewGroup {
             try {
                 startIfReady();
             } catch (SecurityException se) {
-                Log.e(TAG,"Do not have permission to start the camera", se);
+                Log.e(TAG, "Do not have permission to start the camera", se);
             } catch (IOException e) {
                 Log.e(TAG, "Could not start camera source.", e);
             }
@@ -183,10 +178,11 @@ public class CameraSourcePreview extends ViewGroup {
             }
         }
 
-        // Swap width and height sizes when in portrait, since it will be rotated 90 degrees
+        // Swap width and height sizes when in portrait, since it will be rotated 90
+        // degrees
         if (isPortraitMode()) {
             int tmp = width;
-            //noinspection SuspiciousNameCombination
+            // noinspection SuspiciousNameCombination
             width = height;
             height = tmp;
         }
@@ -197,37 +193,33 @@ public class CameraSourcePreview extends ViewGroup {
         // Computes height and width for potentially doing fit width.
 
         int childHeight = layoutHeight;
-        int childWidth = (int)(((float) layoutHeight / (float) height) * width);
-        int leftOffset = ((int)((float) layoutHeight / (float) height) * width - childWidth) / 2;
+        int childWidth = (int) (((float) layoutHeight / (float) height) * width);
+        int leftOffset = ((int) ((float) layoutHeight / (float) height) * width - childWidth) / 2;
         int topOffset = 0;
-
 
         if (childHeight > layoutHeight) {
             childWidth = layoutWidth;
-            childHeight = (int)(((float) layoutWidth / (float) width) * height);
+            childHeight = (int) (((float) layoutWidth / (float) width) * height);
 
             leftOffset = 0;
-            topOffset = ((int)((float) layoutWidth / (float) width) * height - childHeight) / 2;
+            topOffset = ((int) ((float) layoutWidth / (float) width) * height - childHeight) / 2;
         }
 
         mSurfaceView.layout(leftOffset, topOffset, childWidth, childHeight);
 
-
-        int actualWidth = (int) (layoutWidth*ViewFinderWidth);
-        int actualHeight = (int) (layoutHeight*ViewFinderHeight);
-
-        mViewFinderView.layout(layoutWidth/2 -actualWidth/2,layoutHeight/2 - actualHeight/2, layoutWidth/2 + actualWidth/2, layoutHeight/2 + actualHeight/2);
+        int actualWidth = (int) (layoutWidth * ViewFinderWidth);
 
         int buttonSize = dpToPx(45);
-        int torchLeft = (int) layoutWidth/2 + actualWidth/2 + (layoutWidth - (layoutWidth/2 + actualWidth/2))/2 - buttonSize/2;
-        int torchTop = layoutHeight - (layoutWidth-torchLeft);
+        int torchLeft = (int) layoutWidth / 2 + actualWidth / 2
+                + (layoutWidth - (layoutWidth / 2 + actualWidth / 2)) / 2 - buttonSize / 2;
+        int torchTop = layoutHeight - (layoutWidth - torchLeft);
 
         mTorchButton.layout(torchLeft, torchTop, torchLeft + buttonSize, torchTop + buttonSize);
 
         try {
             startIfReady();
         } catch (SecurityException se) {
-            Log.e(TAG,"Do not have permission to start the camera", se);
+            Log.e(TAG, "Do not have permission to start the camera", se);
         } catch (IOException e) {
             Log.e(TAG, "Could not start camera source.", e);
         }
