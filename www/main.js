@@ -140,6 +140,8 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         return false;
     }
 
+    console.log("License Raw Result: ", result);
+
     var temp = result.split("ANSI ");
     if(temp.length > 1) {
         temp = "ANSI " + temp[1];
