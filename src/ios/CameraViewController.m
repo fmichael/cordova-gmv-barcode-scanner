@@ -61,14 +61,6 @@
     return UIInterfaceOrientationMaskPortrait;
 }
 
-- (void)setLastKnownDeviceOrientation:(UIDeviceOrientation)orientation {
-  if (orientation != UIDeviceOrientationUnknown &&
-      orientation != UIDeviceOrientationFaceUp &&
-      orientation != UIDeviceOrientationFaceDown) {
-    _lastKnownDeviceOrientation = orientation;
-  }
-}
-
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
@@ -156,60 +148,18 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     //Convert sampleBuffer into an image.
     UIImage *image = [GMVUtility sampleBufferTo32RGBA:sampleBuffer];
     
-    //We're going to crop UIImage to the onscreen viewfinder's box size for faster processing.
-    UIImage *croppedImg = nil;
     //Rotate the image.
     UIImage * portraitImage = [[UIImage alloc] initWithCGImage: image.CGImage
                                                          scale: 1.0
                                                    orientation: UIImageOrientationRight];
-    //Define the crop coordinates.
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    CGFloat screenWidth = screenRect.size.width;
-    CGFloat screenHeight = screenRect.size.height;
-    
-    CGFloat frameWidth = screenWidth*_scanAreaHeight;
-    CGFloat frameHeight = screenHeight*_scanAreaWidth;
-    
-    CGFloat imageWidth = image.size.width;
-    CGFloat imageHeight = image.size.height;
-    
-    CGFloat actualFrameWidth = 0;
-    CGFloat actualFrameHeight = 0;
-    
-    //Figure out which ratio is bigger and then subtract a value off the frame width in case some of the camera preview is hanging off screen.
-    if(imageWidth/screenWidth < imageHeight/screenHeight){
-        actualFrameWidth = frameWidth * imageWidth/screenWidth - frameWidth/(imageHeight/screenHeight);
-        actualFrameHeight = frameHeight * imageHeight/screenHeight;
-    } else {
-        actualFrameWidth = frameWidth * imageWidth/screenWidth;
-        actualFrameHeight = frameHeight * imageHeight/screenHeight - frameHeight/(imageWidth/screenWidth);
-    }
-    //Define crop rectangle.
-    CGRect cropRect = CGRectMake(imageWidth/2 - actualFrameWidth/2, imageHeight/2 - actualFrameHeight/2, actualFrameWidth, actualFrameHeight);
-    //Crop image
-    croppedImg = [self croppIngimageByImageName:portraitImage toRect:cropRect];
-    
-    //Test code to place the resultant cropped image onto the display to verify sizing.
-    /*dispatch_async(dispatch_get_main_queue(), ^{
-     UIImage *previewImage = [[UIImage alloc] initWithCGImage: croppedImg.CGImage
-     scale: 1.0
-     orientation: UIImageOrientationRight];
-     self.imageView.image = previewImage;
-     });//*/
-    
-    AVCaptureDevicePosition devicePosition = AVCaptureDevicePositionBack;
     
     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
-    GMVImageOrientation orientation = [GMVUtility
-        imageOrientationFromOrientation:deviceOrientation
-              withCaptureDevicePosition:devicePosition
-               defaultDeviceOrientation:self.lastKnownDeviceOrientation];
     NSDictionary *options = @{
-      GMVDetectorImageOrientation : @(orientation)
+      GMVDetectorImageOrientation : @(deviceOrientation)
     };
     
     //Send the image through the barcode reader.
-    NSArray<GMVBarcodeFeature *> *barcodes = [self.barcodeDetector featuresInImage:croppedImg options:options];
+    NSArray<GMVBarcodeFeature *> *barcodes = [self.barcodeDetector featuresInImage:portraitImage options:options];
     
     //Iterate through barcodes.
     dispatch_sync(dispatch_get_main_queue(), ^{
