@@ -140,7 +140,8 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         return false;
     }
 
-    console.log("License Raw Result: ", result);
+    console.log("License Raw Result: "),
+    console.log(result);
 
     var temp = result.split("ANSI ");
     if(temp.length > 1) {
@@ -229,8 +230,10 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         case "01":
             map = {
                 DBA: "LicenseExpiration",
+                DBD: "LicenseIssued",
 
                 DAA: "Names",
+                DBC: "Gender",
 
                 DBB: "BirthDate",
                 DAG: "Address.Address",
@@ -245,9 +248,11 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         case "03":
             map = {
                 DBA: "LicenseExpiration",
+                DBD: "LicenseIssued",
 
                 DCS: "LastName",
                 DCT: "GivenNames",
+                DBC: "Gender",
 
                 DBB: "BirthDate",
                 DAG: "Address.Address",
@@ -266,10 +271,12 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         default:
             map = {
                 DBA: "LicenseExpiration",
+                DBD: "LicenseIssued",
 
                 DCS: "LastName",
                 DAC: "FirstName",
                 DAD: "MiddleName",
+                DBC: "Gender",
 
                 DBB: "BirthDate",
                 DAG: "Address.Address",
@@ -363,6 +370,8 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                         c['LastName'] = this.capitalizeString(val.slice(val.length-1, val.length)[0]);
                     }
                     continue;
+                case "DBC":
+                    val = val == "1" ? "male" : "female";
             }
 
             var path = map[code].split(".");
