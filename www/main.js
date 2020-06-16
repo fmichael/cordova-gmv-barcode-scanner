@@ -208,17 +208,17 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         subfiles.push(subfile);
     }
 
-    // Get only the subfiles that are of type DL or ID. Some jurisdiction specific subfile types might be here that we don't care about.
-    subfiles = subfiles.filter(function(f) {
-        return f.type == "DL" || f.type == "ID";
-    });
-
     // If there are no subfiles then the scan is considered invalid.
     if(subfiles.length == 0) {
         return false;
     } else {
         // If there are subfiles we take the first one and split it into the separate lines.
-        result = subfiles[0].data.split("\n")
+        result = subfiles[0].data.replace("\r", "").split("\n")
+        if(subfiles.length > 1) {
+            for(var j = 1; j < subfiles.length; j++) {
+                result = result.concat(subfiles[j].data.replace("\r", "").split("\n"));
+            }
+        }
     }
 
     // Handle the different AAMVA versions. There are some weird things that happened in the first AAMVA version where the
@@ -303,9 +303,6 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
     }
 
     var stateChar;
-    console.log('Split Result:');
-    console.log('Country: '+country);
-    console.log(result)
 
     for(var i = 0; i < result.length; i++) {
         var line = result[i],
