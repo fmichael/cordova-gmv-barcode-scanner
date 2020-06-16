@@ -300,10 +300,19 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         dateFormat = "YYYYMMDD";
     }
 
+    var stateChar;
+    console.log('Split Result:');
+    console.log('Country: '+country);
+    console.log(result)
+
     for(var i = 0; i < result.length; i++) {
         var line = result[i],
             code = line.slice(0,3),
-            val = line.slice(3);
+            val = line.slice(3).trim();
+        
+        if(code[0] == 'Z') {
+            stateChar = code[1];
+        }
 
         if(map.hasOwnProperty(code)) {
             switch(code) {
@@ -313,6 +322,10 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 case "DAD":
                 case "DAG":
                 case "DAI":
+                    if(/, +$/.test(val)) { //remove trailing slash & extra spaces
+                        val = val.replace(/, *$/, '');
+                    }
+
                     val = this.capitalizeString(val);
                     break;
 
@@ -339,7 +352,7 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 // Get first 5 digits off Zip in case of longer Zip code.
                 case "DAK":
                     if(country == 'CAN') {
-                        val = val.slice(0,7).trim();
+                        val = val.slice(0,7);
                     }
                     else {
                         val = val.slice(0,5);
@@ -348,7 +361,7 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
 
                 // In the case of AAMVA versions 2 and 3 we assume the first word is the first name and any words after are part of the middle name.
                 case "DCT":
-                    val = val.split(" ");
+                    val = val.split(/[ ,]/g);
                     if(val.length > 0) {
                         c['FirstName'] = this.capitalizeString(val[0]);
                     }
@@ -388,8 +401,61 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
     if(c.Address && c.Address.State) {
         c.LicenseState = c.Address.State;
     }
+    else if((!c.Address || !c.Address.State) && stateChar) {
+        if(!c.Address) {
+            c.Address = {};
+        }
+
+        var state = this.guessState(stateChar, country);
+        if(state) {
+            c.LicenseState = c.Address.State = state;
+        }
+    }
     return c;
 };
+
+GMVBarcodeScanner.prototype.guessState = function(stateChar, country) {
+    if(country == 'CAN') {
+        var map = {
+            'A': 'AB',
+            'B': 'BC',
+            'M': 'MB',
+            'N': 'NB',
+            'O': 'ON',
+            'P': 'PE',
+            'Q': 'QC',
+            'S': 'SK',
+            'Y': 'YT'
+        }
+        return map[stateChar];
+    }
+    else if(country == 'USA') {
+        var map = {
+            'A': 'AL',
+            'C': 'CA',
+            'D': 'DE',
+            'W, DC': 'DC',
+            'F': 'FL',
+            'G': 'GA',
+            'H': 'HI',
+            'I': 'ID',
+            'K': 'KS',
+            'L': 'LA',
+            'M': 'ME',
+            'N': 'NE',
+            'O': 'OH',
+            'P': 'PA',
+            'R': 'RI',
+            'S': 'SC',
+            'T': 'TN',
+            'U': 'UT',
+            'V': 'VT',
+            'W': 'WA'
+        }
+
+        return map[stateChar];
+    }
+}
 
 GMVBarcodeScanner.prototype.capitalizeString = function(string) {
     var wordSplitters = [" ","-","O'","L'","D'","St.","Mc","Mac"],

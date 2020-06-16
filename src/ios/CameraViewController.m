@@ -292,8 +292,6 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     _label1.layer.masksToBounds = NO;
     _label1.layer.cornerRadius = 30;
     _label1.userInteractionEnabled = YES;
-    _label1.layer.borderColor = [UIColor whiteColor].CGColor;
-    _label1.layer.borderWidth = 3.0;
     UITapGestureRecognizer* tapScanner = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(focusAtPoint:)];
     [_label1 addGestureRecognizer:tapScanner];
     
