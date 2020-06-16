@@ -140,6 +140,8 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
         return false;
     }
 
+    result = result.replace(/ +/g, ' ').replace(/ $/g, '');
+
     console.log("License Raw Result: "),
     console.log(result);
 
@@ -322,7 +324,7 @@ GMVBarcodeScanner.prototype.processLicenseResult = function(result) {
                 case "DAD":
                 case "DAG":
                 case "DAI":
-                    if(/, +$/.test(val)) { //remove trailing slash & extra spaces
+                    if(/, *$/.test(val)) { //remove trailing slash & extra spaces
                         val = val.replace(/, *$/, '');
                     }
 
